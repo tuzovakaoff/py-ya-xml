@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # Coded by Alexey Moskvin
-import urllib2, urllib
+import urllib
+import requests
 from xml.dom import minidom
 
 class SearchResultItem:
@@ -99,9 +100,8 @@ class YaSearch:
         params = {'user' : self._api_user, 'key' : self._api_key}
         search_url = self._url.encode('utf-8') + urllib.urlencode(params)
         post_data = self.REQUEST_TEMPLATE % (query.encode('utf-8'), str(page))
-        req = urllib2.Request(search_url, post_data)
-        response = urllib2.urlopen(req)
-        xml = response.read()
+        response = requests.post(search_url, data=post_data)
+        xml = response.text
         dom = minidom.parseString(xml)
         items = []
         pages = 0
