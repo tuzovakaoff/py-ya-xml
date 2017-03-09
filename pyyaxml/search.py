@@ -5,9 +5,10 @@ import requests
 from xml.dom import minidom
 
 class SearchResultItem:
-    def __init__(self, url, title, snippet):
+    def __init__(self, url, title, snippet, domain):
         self.url = url
         self.title = title
+        self.domain = domain
         self.snippet = snippet
 
 class SearchResults:
@@ -31,8 +32,8 @@ class YaSearch:
             <page>%s</page>
             <maxpassages>0</maxpassages>
             <groupings>
-		        <groupby mode="flat"/>
-	        </groupings>
+                <groupby mode="flat"/>
+            </groupings>
         </request>"""
 
     BASE_URL = u'https://yandex.{}/search/xml?'
@@ -63,7 +64,7 @@ class YaSearch:
     def _get_items(self, dom):
         items = []
         for docNode in dom.getElementsByTagName('doc'):
-            (url, passage, title) = ('', '', '')
+            (url, passage, title, domain) = ('', '', '', '')
             for child in docNode.childNodes:
                 if child.nodeName == 'url':
                     url = child.childNodes[0].nodeValue
@@ -71,7 +72,9 @@ class YaSearch:
                     title = self._xml_extract_helper(child)
                 if child.nodeName == 'passages':
                     passage = self._xml_extract_helper(child.childNodes[0])
-            items.append(SearchResultItem(url, title, passage))
+                if child.nodeName == 'domain':
+                    domain = self._xml_extract_helper(child)
+            items.append(SearchResultItem(url, title, passage, domain))
         return items
 
     def _get_error(self, dom):
